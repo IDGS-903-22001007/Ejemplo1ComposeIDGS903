@@ -1,34 +1,28 @@
 package com.example.ejemplo1composeidgs903
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import android.media.Image
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
-
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 
 private val tarjetas: List<PersonajeTarjeta> = listOf(
     PersonajeTarjeta("Goku","El protagonista de la serie, conocido por su gran poder y personalidad amigable. Originalmente enviado a la Tierra como un infante volador con la misión de conquistarla. Sin embargo, el caer por un barranco le proporcionó un brutal golpe que si bien casi lo mata, este alteró su memoria y anuló todos los instintos violentos de su especie, lo que lo hizo crecer con un corazón puro y bondadoso, pero conservando todos los poderes de su raza. No obstante, en la nueva continuidad de Dragon Ball se establece que él fue enviado por sus padres a la Tierra con el objetivo de sobrevivir a toda costa a la destrucción de su planeta por parte de Freeza. Más tarde, Kakarot, ahora conocido como Son Goku, se convertiría en el príncipe consorte del monte Fry-pan y líder de los Guerreros Z, así como el mayor defensor de la Tierra y del Universo 7, logrando mantenerlos a salvo de la destrucción en innumerables ocasiones, a pesar de no considerarse a sí mismo como un héroe o salvador."),
@@ -58,7 +52,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun Tarjeta(personajes: List<PersonajeTarjeta>) {
-    LazyColumn {
+    LazyColumn(modifier = Modifier.fillMaxSize()) {
         items(personajes) { personaje ->
             MyPersonajes(personaje)
         }
@@ -67,34 +61,41 @@ fun Tarjeta(personajes: List<PersonajeTarjeta>) {
 
 @Composable
 fun MyPersonajes(personaje: PersonajeTarjeta) {
-
     Card(
-        modifier=Modifier
-            .padding(16.dp)
+        modifier = Modifier
+            .padding(10.dp)
             .fillMaxWidth(),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-
-
-
-    ){
-
-
-    }
-
-    Row {
-        ImagenHeroe()
-        Personajes(personaje)
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+        ) {
+            ImagenHeroe(personaje.title)
+            Spacer(modifier = Modifier.size(16.dp))
+            Personajes(personaje)
+        }
     }
 }
 
 @Composable
-fun Personaje(name: String, color: Color, style: TextStyle) {
-    Text(text = name)
+fun Personaje(name: String, color: Color, style: TextStyle, lines: Int = Int.MAX_VALUE) {
+    Text(text = name, color = color, style = style, maxLines = lines)
 }
 
 @Composable
 fun Personajes(personaje: PersonajeTarjeta) {
-    Column {
+    var expanded by remember { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier
+            .padding(start = 8.dp)
+            .clickable {
+                expanded = !expanded
+            }
+            .fillMaxWidth()
+    ) {
         Personaje(
             personaje.title,
             MaterialTheme.colorScheme.primary,
@@ -103,26 +104,41 @@ fun Personajes(personaje: PersonajeTarjeta) {
         Personaje(
             personaje.body,
             MaterialTheme.colorScheme.onBackground,
-            MaterialTheme.typography.bodyLarge
+            MaterialTheme.typography.bodyLarge,
+            lines = if (expanded) Int.MAX_VALUE else 1
         )
     }
 }
 
 @Composable
-fun ImagenHeroe() {
-    Image(
-        painter = painterResource(R.drawable.goku_normal),
-        contentDescription = "Goku",
-        modifier = Modifier
-            .padding(92.dp)
-            .size(90.dp)
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.primary)
-    )
+fun ImagenHeroe(imageName: String) {
+    val context = LocalContext.current
+    val imageResId = remember(imageName) {
+        context.resources.getIdentifier(imageName.lowercase(), "drawable", context.packageName)
+    }
+
+    if (imageResId != 0) {
+        Image(
+            painter = painterResource(id = imageResId),
+            contentDescription = "Imagen de $imageName",
+            modifier = Modifier
+                .size(70.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primary),
+            contentScale = ContentScale.Crop
+        )
+    } else {
+        Box(
+            modifier = Modifier
+                .size(70.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primary)
+        )
+    }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun PreviewPersonaje() {
-    Tarjeta(tarjetas) // Pass the message list here for preview
+    Tarjeta(tarjetas)
 }
